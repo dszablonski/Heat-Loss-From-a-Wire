@@ -42,7 +42,7 @@ DELIMITER = ','  # Set to space, ' ', if working with .txt file without commas
 # Plotting details
 PLOT_TITLE = r'P = $(5.0\pm0.6)\times10^{-3}$mBar'
 X_LABEL = r'$\dot{Q}$'
-Y_LABEL = r"$T_w$"
+Y_LABEL = r"$T_w$^4"
 AUTO_X_LIMITS = True
 X_LIMITS = [0., 10.]  # Not used unless AUTO_X_LIMITS = False
 AUTO_Y_LIMITS = True
