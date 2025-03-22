@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Least Squares Fitting Routine for Year 1 lab.
 Lloyd Cawthorne 12/06/20
@@ -32,7 +32,6 @@ to edit the file input and plot attributes.
 """
 
 import numpy as np
-from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
 # File reading details
@@ -41,9 +40,9 @@ SKIP_FIRST_LINE = False
 DELIMITER = ','  # Set to space, ' ', if working with .txt file without commas
 
 # Plotting details
-PLOT_TITLE = r'P = 1.2e-2mbar'
-X_LABEL = r'$T_w$'
-Y_LABEL = r"$\dot{Q}$"
+PLOT_TITLE = 'Plot of my data'
+X_LABEL = 'Abscissa'
+Y_LABEL = 'Ordinate'
 AUTO_X_LIMITS = True
 X_LIMITS = [0., 10.]  # Not used unless AUTO_X_LIMITS = False
 AUTO_Y_LIMITS = True
@@ -57,8 +56,8 @@ MARKER_STYLE = 'x'  # See documentation for options:
 MARKER_COLOUR = 'black'
 GRID_LINES = True
 SAVE_FIGURE = True
-FIGURE_NAME = '1.2e-2 mbar.pdf'
-FIGURE_RESOLUTION = 1000  # in dpi
+FIGURE_NAME = 'fit_result.png'
+FIGURE_RESOLUTION = 400  # in dpi
 
 
 def linear_function(x_variable, parameters):
@@ -70,9 +69,6 @@ def linear_function(x_variable, parameters):
     Returns: float
     """
     return parameters[0] * x_variable + parameters[1]
-
-def quartic(x, parameters):
-    return parameters[0] * x**4 + parameters[1]*x**3 + parameters[2]*x**2 + parameters[3]*x + parameters[4]
 
 
 def check_numeric(entry):
@@ -102,11 +98,6 @@ def check_uncertainty(uncertainty):
         return True
     return False
 
-def fun(x, a,b,c):
-    return a*x**4 + b*x + c
-
-def fun2(x, quart,const):
-    return quart*x**4 + const
 
 def validate_line(line):
     """Validates line. Outputs error messages accordingly.
@@ -124,7 +115,7 @@ def validate_line(line):
             print('{0:s} is nonnumerical.'.format(entry))
             return False, line_split
     line_floats = np.array([float(line_split[0]), float(line_split[1]),
-                            float(line_split[2]), float(line_split[3])])
+                            float(line_split[2])])
     if line_floats[2] <= 0:
         print('Line omitted: {0:s}.'.format(line.strip('\n')))
         print('Uncertainty must be greater than zero.')
@@ -147,7 +138,6 @@ def open_file(file_name=FILE_NAME, skip_first_line=SKIP_FIRST_LINE):
     x_data = np.array([])
     y_data = np.array([])
     y_uncertainties = np.array([])
-    x_uncertaintties = np.array([])
     try:
         raw_file_data = open(file_name, 'r')
     except FileNotFoundError:
@@ -163,20 +153,9 @@ def open_file(file_name=FILE_NAME, skip_first_line=SKIP_FIRST_LINE):
                 x_data = np.append(x_data, line_data[0])
                 y_data = np.append(y_data, line_data[1])
                 y_uncertainties = np.append(y_uncertainties, line_data[2])
-                x_uncertaintties = np.append(x_uncertaintties, line_data[3])
     raw_file_data.close()
-    return x_data, y_data, y_uncertainties, x_uncertaintties
+    return x_data, y_data, y_uncertainties
 
-
-def fitter(parameters, xdata, ydata, y_uncertainties):
-    weight = 1/y_uncertainties
-    
-    fit = np.polyfit(xdata, ydata, parameters - 1, cov = True, w=weight)
-    
-    fit_parameters = fit[0]
-    fit_parameter_error = np.sqrt(np.diag(fit[1]))
-    
-    return fit_parameters, fit_parameter_error
 
 def fitting_procedure(x_data, y_data, y_uncertainties):
     """Implements an analytic approach according to source in header.
@@ -216,11 +195,11 @@ def chi_squared_function(x_data, y_data, y_uncertainties, parameters):
     Returns:
         chi_squared: float
     """
-    return np.sum((fun(x_data, *parameters)
+    return np.sum((linear_function(x_data, [parameters[0], parameters[1]])
                    - y_data)**2 / y_uncertainties**2)
 
 
-def create_plot(x_data, y_data, y_uncertainties, x_unc, parameters,
+def create_plot(x_data, y_data, y_uncertainties, parameters,
                 parameter_uncertainties):
     """Produces graphic of resulting fit
     Args:
@@ -234,15 +213,13 @@ def create_plot(x_data, y_data, y_uncertainties, x_unc, parameters,
         None
     """
     # Main plot
-    t = np.linspace(min(x_data), max(x_data), num=500)
-    
     figure = plt.figure(figsize=(8, 6))
 
     axes_main_plot = figure.add_subplot(211)
 
     axes_main_plot.errorbar(x_data, y_data, yerr=y_uncertainties,
                             fmt=MARKER_STYLE, color=MARKER_COLOUR)
-    axes_main_plot.plot(t, fun(t, *parameters),
+    axes_main_plot.plot(x_data, linear_function(x_data, parameters),
                         color=LINE_COLOUR)
     axes_main_plot.grid(GRID_LINES)
     axes_main_plot.set_title(PLOT_TITLE, fontsize=14)
@@ -251,48 +228,40 @@ def create_plot(x_data, y_data, y_uncertainties, x_unc, parameters,
     # Fitting details
     chi_squared = chi_squared_function(x_data, y_data, y_uncertainties,
                                        parameters)
-    degrees_of_freedom = len(x_data) - 3
+    degrees_of_freedom = len(x_data) - 2
     reduced_chi_squared = chi_squared / degrees_of_freedom
 
     axes_main_plot.annotate((r'$\chi^2$ = {0:4.2f}'.
-                             format(chi_squared)), (1, 0), (-60, -35),
+                             format(chi_squared)), (1, 0), (-60, -20),
                             xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
     axes_main_plot.annotate(('Degrees of freedom = {0:d}'.
-                             format(degrees_of_freedom)), (1, 0), (-147, -55),
+                             format(degrees_of_freedom)), (1, 0), (-147, -40),
                             xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
     axes_main_plot.annotate((r'Reduced $\chi^2$ = {0:4.2f}'.
-                             format(reduced_chi_squared)), (1, 0), (-104, -70),
+                             format(reduced_chi_squared)), (1, 0), (-104, -55),
                             xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
-    axes_main_plot.annotate('Fit: $y=ax^4 + bx + c$', (0, 0), (0, -35),
+    axes_main_plot.annotate('Fit: $y=mx+c$', (0, 0), (0, -20),
                             xycoords='axes fraction', va='top',
                             textcoords='offset points')
-    axes_main_plot.annotate(('a = {0:6.4e}'.format(parameters[0])), (0, 0),
-                            (0, -55), xycoords='axes fraction', va='top',
+    axes_main_plot.annotate(('m = {0:6.4e}'.format(parameters[0])), (0, 0),
+                            (0, -40), xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
     axes_main_plot.annotate(('± {0:6.4e}'.format(parameter_uncertainties[0])),
-                            (0, 0), (100, -55), xycoords='axes fraction',
+                            (0, 0), (100, -40), xycoords='axes fraction',
                             va='top', fontsize='10',
                             textcoords='offset points')
-    axes_main_plot.annotate(('b = {0:6.4e}'.format(parameters[1])), (0, 0),
-                            (0, -70), xycoords='axes fraction', va='top',
+    axes_main_plot.annotate(('c = {0:6.4e}'.format(parameters[1])), (0, 0),
+                            (0, -55), xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
     axes_main_plot.annotate(('± {0:6.4e}'.format(parameter_uncertainties[1])),
-                            (0, 0), (100, -70), xycoords='axes fraction',
+                            (0, 0), (100, -55), xycoords='axes fraction',
                             textcoords='offset points', va='top',
                             fontsize='10')
-    axes_main_plot.annotate(('c = {0:6.4e}'.format(parameters[2])), (0, 0),
-                            (0, -85), xycoords='axes fraction', va='top',
-                            textcoords='offset points', fontsize='10')
-    axes_main_plot.annotate(('± {0:6.4e}'.format(parameter_uncertainties[2])),
-                            (0, 0), (100, -85), xycoords='axes fraction',
-                            textcoords='offset points', va='top',
-                            fontsize='10')
-    
-    #Residuals plot
-    residuals = y_data - fun(x_data, *parameters)
+    # Residuals plot
+    residuals = y_data - linear_function(x_data, parameters)
     axes_residuals = figure.add_subplot(414)
     axes_residuals.errorbar(x_data, residuals, yerr=y_uncertainties,
                             fmt=MARKER_STYLE, color=MARKER_COLOUR)
@@ -317,17 +286,11 @@ def main():
     """Main routine. Calls each function in turn.
     Returns:
         None"""
-    x_data, y_data, y_uncertainties, xerr = open_file()
-    #parameters, parameter_uncertainties = fitter(5, x_data, y_data, y_uncertainties)
-    #y_uncertainties = np.zeros(len(x_data))
-    #xerr = np.zeros(len(x_data))
-    #parameters, parameter_uncertainties = fitting_procedure(x_data,y_data,y_uncertainties)
-    
-    parameters, parameter_uncertainties = curve_fit(fun, x_data, y_data)
-    err = np.sqrt(np.diag(parameter_uncertainties))
-    print(parameters)
-    print(parameter_uncertainties)
-    create_plot(x_data, y_data, y_uncertainties, xerr, parameters, err)
+    x_data, y_data, y_uncertainties = open_file()
+    parameters, parameter_uncertainties = fitting_procedure(x_data, y_data,
+                                                            y_uncertainties)
+    create_plot(x_data, y_data, y_uncertainties, parameters,
+                parameter_uncertainties)
     return None
 
 
