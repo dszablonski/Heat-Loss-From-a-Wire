@@ -41,7 +41,7 @@ SKIP_FIRST_LINE = False
 DELIMITER = ','  # Set to space, ' ', if working with .txt file without commas
 
 # Plotting details
-PLOT_TITLE = r'$P = 1$atm'
+PLOT_TITLE = r'$P = 100.5$ mbar'
 X_LABEL = r'$T_w$'
 Y_LABEL = r"$\dot{Q}$"
 AUTO_X_LIMITS = True
@@ -57,7 +57,7 @@ MARKER_STYLE = 'x'  # See documentation for options:
 MARKER_COLOUR = 'black'
 GRID_LINES = True
 SAVE_FIGURE = True
-FIGURE_NAME = '1 atm.pdf'
+FIGURE_NAME = '100.5 mbar.pdf'
 FIGURE_RESOLUTION = 1000  # in dpi
 
 
