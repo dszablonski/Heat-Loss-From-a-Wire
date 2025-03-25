@@ -41,7 +41,7 @@ SKIP_FIRST_LINE = False
 DELIMITER = ','  # Set to space, ' ', if working with .txt file without commas
 
 # Plotting details
-PLOT_TITLE = r'$P = 1$ atm'
+PLOT_TITLE = r'$P = 1$atm'
 X_LABEL = r'$T_w$'
 Y_LABEL = r"$\dot{Q}$"
 AUTO_X_LIMITS = True
@@ -102,17 +102,16 @@ def check_uncertainty(uncertainty):
         return True
     return False
 
-def fun(x, b,c):
-    a = 2.2126e-13
+def fun(x, a,b,c):
+    #a = 2.2126e-13
     
     return a*x**4 + b*x + c
 
 def fun2(x, quart,const):
     return quart*x**4 + const
 
-def fun3(x, c,d,f):
+def fun3(x, b,c,d,f):
     a = 2.2126e-13
-    b = 2.3202e-4
         
     return a*x**4 + b*x + c*x**(d) + f
 
@@ -274,7 +273,7 @@ def create_plot(x_data, y_data, y_uncertainties, x_unc, parameters,
                              format(reduced_chi_squared)), (1, 0), (-104, -70),
                             xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
-    axes_main_plot.annotate('Fit: $y=(2.2125e-13)x^4 + (2.3202e-4)x + ax^{d} + c$', (0, 0), (0, -35),
+    axes_main_plot.annotate('Fit: $y=(2.2125e-13)x^4 + ax + bx^{d} + c$', (0, 0), (0, -35),
                             xycoords='axes fraction', va='top',
                             textcoords='offset points')
     axes_main_plot.annotate(('a = {0:6.4e}'.format(parameters[0])), (0, 0),
@@ -285,7 +284,7 @@ def create_plot(x_data, y_data, y_uncertainties, x_unc, parameters,
                             va='top', fontsize='10',
                             textcoords='offset points')
     
-    axes_main_plot.annotate(('d = {0:6.4e}'.format(parameters[1])), (0, 0),
+    axes_main_plot.annotate(('b = {0:6.4e}'.format(parameters[1])), (0, 0),
                             (0, -70), xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
     axes_main_plot.annotate(('± {0:6.4e}'.format(parameter_uncertainties[1])),
@@ -293,14 +292,14 @@ def create_plot(x_data, y_data, y_uncertainties, x_unc, parameters,
                             textcoords='offset points', va='top',
                             fontsize='10')
     
-    axes_main_plot.annotate(('c = {0:6.4e}'.format(parameters[2])), (0, 0),
+    axes_main_plot.annotate(('d = {0:6.4e}'.format(parameters[2])), (0, 0),
                             (0, -85), xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
     axes_main_plot.annotate(('± {0:6.4e}'.format(parameter_uncertainties[2])),
                             (0, 0), (100, -85), xycoords='axes fraction',
                             textcoords='offset points', va='top',
                             fontsize='10')
-    """
+    
     axes_main_plot.annotate(('c = {0:6.4e}'.format(parameters[3])), (0, 0),
                             (0, -100), xycoords='axes fraction', va='top',
                             textcoords='offset points', fontsize='10')
@@ -308,7 +307,7 @@ def create_plot(x_data, y_data, y_uncertainties, x_unc, parameters,
                             (0, 0), (100, -100 ), xycoords='axes fraction',
                             textcoords='offset points', va='top',
                             fontsize='10')
-    """
+    
     
     
     #Residuals plot
@@ -344,7 +343,7 @@ def main():
     #xerr = np.zeros(len(x_data))
     #parameters, parameter_uncertainties = fitting_procedure(x_data,y_data,y_uncertainties)
     
-    parameters, parameter_uncertainties = curve_fit(fun3, x_data, y_data, maxfev=10000000, p0=[1,0.25,1])
+    parameters, parameter_uncertainties = curve_fit(fun3, x_data, y_data, maxfev=10000000, sigma=yerr)
     err = np.sqrt(np.diag(parameter_uncertainties))
     print(parameters)
     create_plot(x_data, y_data, yerr, xerr, parameters, err)
